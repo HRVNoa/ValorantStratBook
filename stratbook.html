@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorant Strat Book</title>
+    <style>
+        /* --- Reset & Variables --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        :root {
+            --bg-color: #11141a;
+            --card-bg: #1b1f29;
+            --valorant-red: #ff4655;
+            --attack-color: #ee4135;
+            --defense-color: #00b0ff;
+            --text-color: #ece8e1;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--valorant-red);
+            padding-bottom: 15px;
+        }
+
+        header h1 {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* --- Zone de Chargement --- */
+        .scan-zone {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .btn-import {
+            background: var(--valorant-red);
+            color: var(--text-color);
+            padding: 14px 28px;
+            font-size: 1rem;
+            display: inline-block;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(255, 70, 85, 0.4);
+            transition: background 0.2s ease;
+        }
+
+        .btn-import:hover {
+            background: #e63e4b;
+        }
+
+        /* --- Filtres --- */
+        .filters {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .filter-label {
+            font-weight: bold;
+            min-width: 80px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #2a3140;
+            color: var(--text-color);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .btn:hover {
+            background: #3a4458;
+        }
+
+        /* États actifs des filtres */
+        .btn.active[data-filter="map"] { background: var(--valorant-red); }
+        .btn.active[data-side="attaque"] { background: var(--attack-color); }
+        .btn.active[data-side="defense"] { background: var(--defense-color); }
+        .btn.active[data-side="all"] { background: #555; }
+
+        /* --- Grille des Cartes --- */
+        .strats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .strat-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .strat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+        }
+
+        .strat-card.attaque { border-top-color: var(--attack-color); }
+        .strat-card.defense { border-top-color: var(--defense-color); }
+
+        .media-container {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            pointer-events: none; /* Permet au clic d'enregistrer la carte entière */
+        }
+
+        .media-container img, .media-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .strat-info {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .strat-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: capitalize;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tags {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .tag.tag-map { background: #3a4458; }
+        .tag.tag-attaque { background: rgba(238, 65, 53, 0.2); color: var(--attack-color); }
+        .tag.tag-defense { background: rgba(0, 176, 255, 0.2); color: var(--defense-color); }
+
+        .no-strat {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px;
+            color: #888;
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+
+        /* --- FENÊTRE MODALE (Visionneuse grand format) --- */
+        .modal {
+            display: none; /* Cachée par défaut */
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 12, 16, 0.95); /* Fond très sombre */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content-wrapper {
+            position: relative;
+            max-width: 85%;
+            max-height: 85%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border: 2px solid #2a3140;
+        }
+
+        .modal-media {
+            max-width: 100%;
+            max-height: 75vh;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .modal-title {
+            margin-top: 15px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-transform: capitalize;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: -45px;
+            right: -10px;
+            color: var(--text-color);
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--valorant-red);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Valorant Strat Book</h1>
+</header>
+
+<div class="scan-zone">
+    <label for="folder-picker" class="btn-import">
+        📂 Sélectionner le dossier "maps"
+    </label>
+    <input type="file" id="folder-picker" webkitdirectory directory multiple style="display: none;">
+</div>
+
+<div class="filters">
+    <div class="filter-group">
+        <div class="filter-label">Maps:</div>
+        <div class="btn-group" id="map-filters">
+        </div>
+    </div>
+    <div class="filter-group">
+        <div class="filter-label">Side:</div>
+        <div class="btn-group" id="side-filters">
+            <button class="btn active" data-side="all">Tous</button>
+            <button class="btn" data-side="attaque">Attaque</button>
+            <button class="btn" data-side="defense">Défense</button>
+        </div>
+    </div>
+</div>
+
+<main class="strats-grid" id="strats-container">
+    <div class="no-strat">Clique sur le bouton ci-dessus et sélectionne ton dossier global "maps" pour charger les stratégies.</div>
+</main>
+
+<div id="strat-modal" class="modal">
+    <div class="modal-content-wrapper">
+        <span class="modal-close" id="modal-close-btn">&times;</span>
+        <div id="modal-media-target"></div>
+        <div id="modal-title-target" class="modal-title"></div>
+    </div>
+</div>
+
+<script>
+    let stratDatabase = [];
+    let maps = [];
+    let currentMap = "";
+    let currentSide = "all";
+
+    const folderPicker = document.getElementById('folder-picker');
+    const mapFiltersContainer = document.getElementById('map-filters');
+    const sideFiltersContainer = document.getElementById('side-filters');
+    const stratsContainer = document.getElementById('strats-container');
+
+    // Éléments de la modale
+    const stratModal = document.getElementById('strat-modal');
+    const modalMediaTarget = document.getElementById('modal-media-target');
+    const modalTitleTarget = document.getElementById('modal-title-target');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+
+    // Écouteur sur la sélection du dossier
+    folderPicker.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        stratDatabase = [];
+
+        files.forEach(file => {
+            const pathParts = file.webkitRelativePath.split('/');
+
+            if (pathParts.length >= 4) {
+                const map = pathParts[1].toLowerCase();
+                const side = pathParts[2].toLowerCase();
+                const fileName = pathParts[3];
+
+                if ((side === 'attaque' || side === 'defense') && !fileName.startsWith('.')) {
+                    const fileURL = URL.createObjectURL(file);
+
+                    stratDatabase.push({
+                        map: map,
+                        side: side,
+                        file: fileName,
+                        url: fileURL
+                    });
+                }
+            }
+        });
+
+        maps = [...new Set(stratDatabase.map(strat => strat.map))].sort();
+        currentMap = maps[0] || "";
+
+        initMapFilters();
+        renderStrats();
+    });
+
+    function initMapFilters() {
+        mapFiltersContainer.innerHTML = maps.map((map, index) => `
+                <button class="btn ${map === currentMap ? 'active' : ''}" data-filter="map" data-map="${map}">
+                    ${map}
+                </button>
+            `).join('');
+    }
+
+    function renderStrats() {
+        stratsContainer.innerHTML = "";
+
+        const filteredStrats = stratDatabase.filter(strat => {
+            return strat.map === currentMap && (currentSide === "all" || strat.side === currentSide);
+        });
+
+        if (filteredStrats.length === 0) {
+            stratsContainer.innerHTML = `<div class="no-strat">Aucune stratégie trouvée pour cette sélection.</div>`;
+            return;
+        }
+
+        filteredStrats.forEach((strat, index) => {
+            const fileExtension = strat.file.split('.').pop().toLowerCase();
+            const stratName = strat.file.substring(0, strat.file.lastIndexOf('.')).replace(/[-_]/g, ' ');
+
+            let isVideo = ['mp4', 'mov', 'webm'].includes(fileExtension);
+            let mediaHTML = isVideo
+                ? `<video src="${strat.url}" preload="metadata"></video>` // Pas de contrôles sur la miniature pour éviter les conflits au clic
+                : `<img src="${strat.url}" alt="${stratName}" loading="lazy">`;
+
+            const card = document.createElement('div');
+            card.className = `strat-card ${strat.side}`;
+            card.dataset.index = index; // On lie la carte à son index dans la base filtrée
+            card.innerHTML = `
+                    <div class="media-container">${mediaHTML}</div>
+                    <div class="strat-info">
+                        <div class="strat-title" title="${stratName}">${stratName}</div>
+                        <div class="tags">
+                            <span class="tag tag-map">${strat.map}</span>
+                            <span class="tag tag-${strat.side}">${strat.side}</span>
+                        </div>
+                    </div>
+                `;
+
+            // Événement au clic sur la carte pour ouvrir la modale
+            card.addEventListener('click', () => {
+                openModal(strat.url, stratName, isVideo);
+            });
+
+            stratsContainer.appendChild(card);
+        });
+    }
+
+    // --- Logique de la Modale ---
+    function openModal(url, title, isVideo) {
+        modalMediaTarget.innerHTML = ""; // On nettoie l'ancienne modale
+
+        if (isVideo) {
+            modalMediaTarget.innerHTML = `<video src="${url}" class="modal-media" controls autoplay></video>`;
+        } else {
+            modalMediaTarget.innerHTML = `<img src="${url}" class="modal-media" alt="${title}">`;
+        }
+
+        modalTitleTarget.innerText = title;
+        stratModal.style.display = "flex";
+    }
+
+    function closeModal() {
+        // On coupe la vidéo en cours de lecture en vidant le contenu
+        modalMediaTarget.innerHTML = "";
+        stratModal.style.display = "none";
+    }
+
+    // Fermeture au clic sur la croix
+    modalCloseBtn.addEventListener('click', closeModal);
+
+    // Fermeture au clic n'importe où en dehors de l'image/vidéo
+    stratModal.addEventListener('click', (e) => {
+        if (e.target === stratModal) {
+            closeModal();
+        }
+    });
+
+    // --- Événements de clics sur les boutons de filtres ---
+    mapFiltersContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn')) {
+            document.querySelectorAll('[data-filter="map"]').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentMap = e.target.dataset.map;
+            renderStrats();
+        }
+    });
+
+    sideFiltersContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn')) {
+            document.querySelectorAll('#side-filters .btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentSide = e.target.dataset.side;
+            renderStrats();
+        }
+    });
+</script>
+</body>
+</html>
