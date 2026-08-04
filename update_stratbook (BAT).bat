@@ -1,0 +1,3 @@
+@echo off
+powershell -Command "Write-Host 'Telechargement de la derniere version...' -ForegroundColor Green; Invoke-WebRequest -Uri 'https://github.com/HRVNoa/ValorantStratBook/archive/refs/heads/master.zip' -OutFile 'latest.zip'; Expand-Archive -Path 'latest.zip' -DestinationPath 'temp_update' -Force; Copy-Item -Path 'temp_update\ValorantStratBook-master\*' -Destination '.' -Recurse -Force; Remove-Item -Path 'temp_update' -Recurse -Force; Remove-Item -Path 'latest.zip' -Force; Write-Host 'Mise a jour terminee !' -ForegroundColor Green"
+timeout /t 2 /nobreak > nul
